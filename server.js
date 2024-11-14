@@ -77,6 +77,8 @@ const Topic = {
   MEMBER_JOIN: "MEMBER_JOIN",
   MEMBER_LEAVE: "MEMBER_LEAVE",
   ROOM_DISBAND: "ROOM_DISBAND",
+  VIDEO_STATUS_CHANGE: "VIDEO_STATUS_CHANGE",
+  AUDIO_STATUS_CHANGE: "AUDIO_STATUS_CHANGE",
 };
 
 const io = require("socket.io")(server, {
@@ -155,18 +157,13 @@ io.on(Topic.CONNECTION, (socket) => {
     }
   });
 
-  // test private chat
-  socket.on("PRIVATE_CHAT", (id) => {
-    const targetSocketId = room.connectedUsers.find(
-      (u) => u.memberId === id
-    )?.socketId;
-
-    if (targetSocketId) {
-      console.log("PRIVATE_CHAT", " send", " to", targetSocketId);
-      // 转发给指定客户端
-      io.to(targetSocketId).emit("PRIVATE_CHAT", id);
-    }
-  });
+  // 监听音视频状态改变
+  socket.on(Topic.AUDIO_STATUS_CHANGE, (data) => {
+    io.emit(Topic.AUDIO_STATUS_CHANGE, data)
+  })
+  socket.on(Topic.VIDEO_STATUS_CHANGE, (data) => {
+    io.emit(Topic.VIDEO_STATUS_CHANGE, data);
+  })
 
   // 监听断开连接事件
   socket.on(Topic.DISCONNECT, () => {
