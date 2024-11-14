@@ -58,7 +58,7 @@ app.get("/api/member-info/:memberId", (req, res) => {
       res.send({ err: "该会议成员不存在!" });
     } else {
       res.send({
-        memberInfo: {...member, isRoomHost: memberId === room.hostId},
+        memberInfo: { ...member, isRoomHost: memberId === room.hostId },
       });
     }
   }
@@ -68,7 +68,8 @@ app.get("/api/member-info/:memberId", (req, res) => {
 const Topic = {
   CONNECTION: "connection",
   DISCONNECT: "disconnect",
-  CHAT_MESSAGE: "CHAT_MESSAGE",
+  SEND_CHAT_MESSAGE: "SEND_CHAT_MESSAGE",
+  RECEIVE_CHAT_MESSAGE: "RECEIVE_CHAT_MESSAGE",
   SEND_VIDEO_OFFER_ANSWER: "SEND_VIDEO_OFFER_ANSWER",
   RECEIVE_VIDEO_OFFER_ANSWER: "RECEIVE_VIDEO_OFFER_ANSWER",
   SEND_ICE_CANDIDATE: "SEND_ICE_CANDIDATE",
@@ -112,10 +113,10 @@ io.on(Topic.CONNECTION, (socket) => {
   io.emit(Topic.MEMBER_JOIN, { memberId: newUser.memberId });
 
   // 聊天消息
-  socket.on(Topic.CHAT_MESSAGE, (data) => {
+  socket.on(Topic.SEND_CHAT_MESSAGE, (data) => {
     console.log("收到聊天消息:", data);
     // 向所有连接的客户端广播消息
-    io.emit(Topic.CHAT_MESSAGE, data);
+    io.emit(Topic.RECEIVE_CHAT_MESSAGE, { ...data, timestamp: Date.now() });
   });
 
   // 监听客户端发给信令服务器的 Video Offer && Answer
